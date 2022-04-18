@@ -1,0 +1,233 @@
+
+from dataclasses import is_dataclass
+from re import I
+from bs4 import BeautifulSoup
+import requests
+import sqlite3
+import json
+import os
+import matplotlib
+import matplotlib.pyplot as plt
+
+def setUpDatabase(db_name):
+    '''set up a database'''
+    path = os.path.dirname(os.path.abspath(__file__))
+    conn = sqlite3.connect(path+'/'+db_name)
+    cur = conn.cursor()
+    return cur, conn
+
+
+def do_calc(cur, conn):
+    '''calculate the average number of points from a certain team'''
+
+
+
+    cur.execute("SELECT team_id FROM Stats")
+    team_ids = cur.fetchall()
+    id_track = []
+    final = []
+    for item in team_ids:
+        team_id = item[0]
+        if team_id in id_track:
+            continue
+        else:
+            cur.execute("SELECT points FROM Stats WHERE team_id = ?", (team_id,))
+            id_track.append(team_id)
+            lst = cur.fetchall()
+            totals = []
+            for item in lst:
+                totals.append(item[0])
+            total = sum(totals)
+            cur.execute("SELECT Players.name, Stats.points FROM Players JOIN Stats on Players.id = Stats.player_id where team_id = ?", (team_id,))
+            names = cur.fetchall()
+            for item in names:
+                pct = item[1] / total * 100
+                name = item[0]
+                final.append((team_id, pct, name))
+
+    return final
+def do_calcs(cur, conn):
+    '''calculate the average number of points scored
+    per player within each game (group together the games by game id)'''
+
+
+    cur.execute("SELECT game_id FROM Stats")
+    games = cur.fetchall()
+    l = []
+    for game in games:
+        if game not in l:
+            l.append(game)
+    cur.execute("SELECT points, game_id FROM Stats")
+    game_ids = cur.fetchall()
+    lst1 = []
+    lst2 = []
+    lst3 =[]
+    lst4 = []
+    lst5 = []
+    
+    for item in game_ids:
+        if item[1] == l[0][0]:
+            lst1.append(item)
+        elif item[1] == l[1][0]:
+            lst2.append(item)
+        elif item[1] == l[2][0]:
+            lst3.append(item)
+        elif item[1] == l[3][0]:
+            lst4.append(item)
+        else:
+            lst5.append(item)
+    av1 = sum([item[0] for item in lst1]) / len(lst1)
+    av2 = sum([item[0] for item in lst2]) / len(lst2)
+    av3 = sum([item[0] for item in lst3]) / len(lst3)
+    av4 = sum([item[0] for item in lst4]) / len(lst4)
+    av5 = sum([item[0] for item in lst5]) / len(lst5)
+    
+    return ([av1, av2, av3, av4, av5], [x[0] for x in l])
+
+def do_calc2(cur, conn):
+    '''calculate the average number of rebounds on an associated team'''
+    cur.execute("SELECT team_id FROM Stats")
+    team_ids = cur.fetchall()
+    id_track = []
+    final = []
+    for item in team_ids:
+        team_id = item[0]
+        if team_id in id_track:
+            continue
+        else:
+            cur.execute("SELECT rebounds FROM Stats WHERE team_id = ?", (team_id,))
+            id_track.append(team_id)
+            lst = cur.fetchall()
+            totals = []
+            for item in lst:
+                totals.append(item[0])
+            total = sum(totals)
+            cur.execute("SELECT Players.name, Stats.points FROM Players JOIN Stats on Players.id = Stats.player_id where team_id = ?", (team_id,))
+            names = cur.fetchall()
+            for item in names:
+                pct = item[1] / total * 100
+                name = item[0]
+                final.append((team_id, pct, name))
+
+    return final
+def write_file(lst):
+    '''write the calculated data of players and the 
+    percentant they scored from their team to a file'''
+
+
+    f = open("ball_dont_lie.txt", "w")
+    for item in lst:
+        f.write(item[-1] + ": " + str(item[1]) + "%" + '\n')
+    f.close()
+
+def write_file2(lst):
+    '''write the average number of points scored by each player per each 
+    game to a file'''
+
+
+    f = open("ball_dont_lie_2.txt", "w")
+    for i in range(len(lst[0])):
+        f.write("Average points per player in game id #" + str(lst[1][i]) + ": " + str(lst[0][i]) + '\n')
+    f.close()
+
+def make_vis(lst):
+
+    '''create a pie chart of percent of points scored
+    by each player on a team by accepting an input of a team
+    from the user'''
+
+
+    inp = input("Enter an NBA team id number, 1-30")
+    try:
+        inp = int(inp)
+            
+    except:
+        print("Enter a valid number")
+        inp = input("Enter an NBA team id number, 1-30")
+
+    
+    while int(inp) not in list(range(1, 31)):
+            inp = input("Enter an NBA team id number, be sure it is in the range 1-30")
+            if inp in list(range(1, 31)):
+                break
+
+    gets = []
+    for item in lst:
+        if item[0] == int(inp):
+            gets.append(item)
+    ids = [item[0] for item in gets]
+    nums = [item[1] for item in gets]
+    names = [item[2] for item in gets]
+    colors = ['blue', 'green', 'yellow', 'red']
+    
+    # Pie chart, where the slices will be ordered and plotted counter-clockwise:
+    title = "Percentage of points scored by players on team " + str(ids[0])
+
+    plt.pie(nums, labels=names, autopct='%1.1f%%',
+    shadow=True, startangle=90, colors=  colors)
+    plt.axis('equal') 
+    plt.title(title)
+    plt.show()
+
+
+
+def make_vis2(lst):
+    '''create a pie chart of percent of rebounds scored
+    by each player on a team by accepting an input of a team
+    from the user'''
+
+    inp = input("Enter an NBA team id number, 1-30")
+    try:
+        inp = int(inp)
+            
+    except:
+        print("Enter a valid number")
+        inp = input("Enter an NBA team id number, 1-30")
+
+    
+    while int(inp) not in list(range(1, 31)):
+            inp = input("Enter an NBA team id number, be sure it is in the range 1-30")
+            if inp in list(range(1, 31)):
+                break
+
+    gets = []
+    for item in lst:
+        if item[0] == int(inp):
+            gets.append(item)
+    ids = [item[0] for item in gets]
+    nums = [item[1] for item in gets]
+    names = [item[2] for item in gets]
+    colors = ['blue', 'green', 'yellow', 'red']
+    title = "Percentage of rebounds by players on team " + str(ids[0])
+
+    plt.pie(nums, labels=names, autopct='%1.1f%%',
+    shadow=True, startangle=90, colors=  colors)
+    plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    plt.title(title, fontweight = "bold")
+    plt.show()
+
+def make_vis3(lst):
+    '''create a bar graph of the 
+    average number of points scored per player in a game'''
+    
+    nums = lst[0]
+    ids = list(range(1, 6)) #lst[1]
+    plt.bar(ids, nums, color=  "Purple")
+    plt.xlabel("Game",  fontname = "Times New Roman", size = 12)
+    plt.ylabel("Average points scored", fontname = "Times New Roman", size = 12)
+    plt.title("Average Number of Points scored per player in a game", fontweight = 'bold', size = 13)
+    
+    plt.show()
+
+def main():
+    # SETUP DATABASE AND TABLE
+    cur, conn = setUpDatabase('DATABASE.db')
+    do_calc(cur, conn)
+    make_vis(do_calc(cur, conn))
+    make_vis2(do_calc2(cur, conn))
+    write_file(do_calc(cur, conn))
+    do_calcs(cur, conn)
+    make_vis3(do_calcs(cur, conn))
+    write_file2(do_calcs(cur,conn))
+if __name__ == "__main__":
+    main()

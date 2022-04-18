@@ -60,18 +60,13 @@ def table(cur, conn, lst_of_tup):
     cur.execute("CREATE TABLE IF NOT EXISTS Earnings (id INTEGER UNIQUE PRIMARY KEY, rank INTEGER, name TEXT , team INTEGER, earnings TEXT)")
     cur.execute('SELECT COUNT(name) FROM Earnings')
     start = cur.fetchone()[0]
-    print(start)
     count = 0+start
-    print(lst_of_tup)
 #     #need to limit this to 25 per time
     for num in range(start,start+25):
-        try:
-            cur.execute('SELECT id FROM Teams WHERE team = ?',(lst_of_tup[num][2],))
-            team_id = cur.fetchone()[0]
-            cur.execute("INSERT OR IGNORE INTO Earnings (id, rank, name, team, earnings) VALUES (?, ?, ?, ?, ?)", (count, lst_of_tup[num][0],lst_of_tup[num][1],team_id,lst_of_tup[num][3]))
-            count=count+1
-        except:
-            continue
+        cur.execute('SELECT id FROM Teams WHERE team = ?',(lst_of_tup[num][2],))
+        team_id = cur.fetchone()[0]
+        cur.execute("INSERT OR IGNORE INTO Earnings (id, rank, name, team, earnings) VALUES (?, ?, ?, ?, ?)", (count, lst_of_tup[num][0],lst_of_tup[num][1],team_id,lst_of_tup[num][3]))
+        count=count+1
     conn.commit()
 def main():
 #     # SETUP DATABASE AND TABLE

@@ -5,12 +5,22 @@ import os
 import matplotlib.pyplot as plt
 
 def makeDB(name):
+    '''
+    Connects to a database passed in by parameter
+    Returns cursor and connection to be used in main
+    '''
     path = os.path.dirname(os.path.abspath(__file__))
     conn = sqlite3.connect(path+'/'+name)
     cur = conn.cursor()
     return cur, conn
 
 def get_data(cur, conn):
+    '''
+    Asks user to input a year they would like to be added to the database
+    Uses http://ergast.com/api/f1 to get the EOY standings for that year (max 25)
+    Adds the data each time there is user input to a database made by the makeDB function in main 
+    Returns a list of tuples containing (Driver Full Name, Year, Position, Constructor)
+    '''
     while True:
         name_L = []
         constructor_L = []
@@ -48,6 +58,10 @@ def get_data(cur, conn):
     return full_L
 
 def calculations(cur):
+    '''
+    Joins all 3 tables in the database to calculate the average finishing position by constructor over the years inputted by user
+    Returns a list of tuples containing constructor name and average finish sorted in ascending order
+    '''
     d = {}
     cur.execute("""SELECT F1_Driver_Names.name, F1_Position_Data.year, F1_Position_Data.finish, F1_Constructor_Names.constructor FROM F1_Position_Data JOIN F1_Driver_Names ON 
     F1_Driver_Names.id = F1_Position_Data.driver_id JOIN F1_Constructor_Names ON F1_Constructor_Names.id = F1_Position_Data.constructor_id""")
@@ -64,6 +78,9 @@ def calculations(cur):
     return sorted_d
 
 def write_file(calcs, file_name):
+    '''
+    Writes the calculations made in the calculations funciton to a csv file
+    '''
     path = os.path.dirname(os.path.abspath(__file__)) + os.sep
     with open(path + file_name,"w") as f:
         f.write("Constructor,Average Finish Over User Inputted Years\n")
@@ -71,6 +88,9 @@ def write_file(calcs, file_name):
             f.write(tups[0]+","+str(tups[1])+"\n")
 
 def make_visualization(calcs):
+    '''
+    Makes a vertical bar chart visualizing the data passed in (from calculations function)
+    '''
     x_axis = []
     y_axis = []
     for tups in calcs[:20]:
@@ -84,9 +104,12 @@ def make_visualization(calcs):
     plt.show()
 
 def main():
+    '''
+    Calls all functions to fully execute code
+    '''
     cur, conn = makeDB("DATABASE.db")
     get_data(cur, conn)
-    write_file(calculations(cur), "f1file.csv")
+    write_file(calculations(cur), "F1.csv")
     make_visualization(calculations(cur))
 
 main()

@@ -1,0 +1,2 @@
+average salary = 29162910.0
+average endsorsments = 13132750.0

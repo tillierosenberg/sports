@@ -6,6 +6,7 @@ import json
 import os
 
 def setUpDatabase(db_name):
+    '''set up database'''
     path = os.path.dirname(os.path.abspath(__file__))
     conn = sqlite3.connect(path+'/'+db_name)
     cur = conn.cursor()
@@ -13,6 +14,11 @@ def setUpDatabase(db_name):
 
 
 def api():
+    '''uses the ball dont lie
+    api to get a list of all game points, rebounds, assists, team id, and player id
+    and limits it to >25 at a line by looping through page numbers and writing the current
+    page number to a file'''
+
     lst1 =  []
     lst2 =  []
     #lst3 = []
@@ -55,10 +61,11 @@ def api():
 
 
 def create_tables(lst, cur, conn):
-    cur.execute("CREATE TABLE IF NOT EXISTS Stats (player_id INTEGER PRIMARY KEY, points INTEGER, rebounds INTEGER, assists INTEGER, team_id INTEGER, game_id INTEGER)")
     """
     creates the database for the stats and puts the numbers into it. 
     """
+    
+    cur.execute("CREATE TABLE IF NOT EXISTS Stats (player_id INTEGER PRIMARY KEY, points INTEGER, rebounds INTEGER, assists INTEGER, team_id INTEGER, game_id INTEGER)")
     for item in lst[0]:
         cur.execute("INSERT OR IGNORE INTO Stats (player_id, points, rebounds, assists, team_id, game_id) VALUES (?,?,?,?,?,?)", (item[0], item[1], item[2], item[3], item[4], item[5]))
     cur.execute("CREATE TABLE IF NOT EXISTS Players (id INTEGER PRIMARY KEY, name TEXT UNIQUE)")

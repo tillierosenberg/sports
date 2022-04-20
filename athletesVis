@@ -12,13 +12,15 @@ import numpy as np
 
 
 def setUpDatabase(db_name):
-    '''set up a database'''
+    '''takes in string as a database name and sets up that database'''
     path = os.path.dirname(os.path.abspath(__file__))
     conn = sqlite3.connect(path+'/'+db_name)
     cur = conn.cursor()
     return cur, conn
 
 def visualizeAndCalc(cur, conn):
+    '''gets salary and endorsments from the table Earnings and calculates the average of each amongst all of the players.  
+    it also plots each individual's salary vs endorsment on a scatter plot as well as plots the averages on the scatter plot'''
     cur.execute('SELECT salary, endorsments FROM Earnings')
     data = cur.fetchall()
     print(data)
@@ -40,18 +42,17 @@ def visualizeAndCalc(cur, conn):
         sum_of_e+=i
     avg_e = sum_of_e/len(endorsments)
 
-
-
     plt.scatter(salaries, endorsments, c='darkolivegreen') 
     plt.scatter(avg_sal, avg_e, c='deeppink')
     plt.title('Endorsments Compared to Salary for Top 100 Paid Athletes')
-    plt.xlabel('Salary')
-    plt.ylabel('Endorsments')
+    plt.xlabel('Salary (in dollars)')
+    plt.ylabel('Endorsments (in dollars) ')
     plt.legend(["individual athletes" , "average endorsment vs average salary"])
     plt.show()
     return (avg_sal,avg_e)
 
 def writeF(tup):
+    '''creates a file and writes the averages to the file'''
     f = open("averages.txt", "w")
     f.write('average salary = ' + str(tup[0])+'\n' )
     f.write('average endsorsments = ' + str(tup[1]))
@@ -61,7 +62,7 @@ def writeF(tup):
     print(file.read())
     
 def main():
-    # SETUP DATABASE AND TABLE
+    '''sets up the code in the order it needs to run'''
     cur, conn = setUpDatabase('DATABASE.db')
     visualizeAndCalc(cur,conn)
     writeF(visualizeAndCalc(cur, conn))

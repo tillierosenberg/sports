@@ -17,7 +17,8 @@ def api():
     '''uses the ball dont lie
     api to get a list of all game points, rebounds, assists, team id, and player id
     and limits it to >25 at a line by looping through page numbers and writing the current
-    page number to a file'''
+    page number to a file
+    takes in nothing and returns a tuple of lists that will go in each table'''
 
     lst1 =  []
     lst2 =  []
@@ -63,6 +64,7 @@ def api():
 def create_tables(lst, cur, conn):
     """
     creates the database for the stats and puts the numbers into it. 
+    takes in the tuple of what is returned from API and cur and conn, returns nothing
     """
     
     cur.execute("CREATE TABLE IF NOT EXISTS Stats (player_id INTEGER PRIMARY KEY, points INTEGER, rebounds INTEGER, assists INTEGER, team_id INTEGER, game_id INTEGER)")
@@ -77,7 +79,8 @@ def create_tables(lst, cur, conn):
 
 
 def main():
-    # SETUP DATABASE AND TABLE
+    """calls functions so that code can execute properly"""
+    
     cur, conn = setUpDatabase('DATABASE.db')
     create_tables(api(), cur, conn)
 if __name__ == "__main__":

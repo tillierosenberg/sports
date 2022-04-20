@@ -1,0 +1,70 @@
+from dataclasses import is_dataclass
+from re import I
+from anyio import EndOfStream
+from bs4 import BeautifulSoup
+import requests
+import sqlite3
+import json
+import os
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+def setUpDatabase(db_name):
+    '''set up a database'''
+    path = os.path.dirname(os.path.abspath(__file__))
+    conn = sqlite3.connect(path+'/'+db_name)
+    cur = conn.cursor()
+    return cur, conn
+
+def visualizeAndCalc(cur, conn):
+    cur.execute('SELECT salary, endorsments FROM Earnings')
+    data = cur.fetchall()
+    print(data)
+    conn.commit
+    salaries = []
+    endorsments = []
+    
+    for tup in data:
+        salaries.append(tup[0])
+        endorsments.append(tup[1])
+
+    sum_of_sal = 0
+    for i in salaries:
+        sum_of_sal+=i
+    avg_sal = sum_of_sal/len(salaries)
+    sum_of_e=0
+
+    for i in endorsments:
+        sum_of_e+=i
+    avg_e = sum_of_e/len(endorsments)
+
+
+
+    plt.scatter(salaries, endorsments, c='darkolivegreen') 
+    plt.scatter(avg_sal, avg_e, c='deeppink')
+    plt.title('Endorsments Compared to Salary for Top 100 Paid Athletes')
+    plt.xlabel('Salary')
+    plt.ylabel('Endorsments')
+    plt.legend(["individual athletes" , "average endorsment vs average salary"])
+    plt.show()
+    return (avg_sal,avg_e)
+
+def writeF(tup):
+    f = open("averages.txt", "w")
+    f.write('average salary = ' + str(tup[0])+'\n' )
+    f.write('average endsorsments = ' + str(tup[1]))
+
+    f.close()
+    file = open("averages.txt", "r")
+    print(file.read())
+    
+def main():
+    # SETUP DATABASE AND TABLE
+    cur, conn = setUpDatabase('DATABASE.db')
+    visualizeAndCalc(cur,conn)
+    writeF(visualizeAndCalc(cur, conn))
+    
+if __name__ == "__main__":
+    main() 

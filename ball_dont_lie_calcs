@@ -10,7 +10,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 def setUpDatabase(db_name):
-    '''set up a database'''
+    '''set up a database, takes in the name of the database
+    returns the connector and cur'''
     path = os.path.dirname(os.path.abspath(__file__))
     conn = sqlite3.connect(path+'/'+db_name)
     cur = conn.cursor()
@@ -18,9 +19,8 @@ def setUpDatabase(db_name):
 
 
 def do_calc(cur, conn):
-    '''calculate the average number of points from a certain team'''
-
-
+    '''calculate the average number of points from a certain team
+    takes in the cur and conn and returns a list of tuples of team id, rebounds scored, and player name'''
 
     cur.execute("SELECT team_id FROM Stats")
     team_ids = cur.fetchall()
@@ -48,7 +48,9 @@ def do_calc(cur, conn):
     return final
 def do_calcs(cur, conn):
     '''calculate the average number of points scored
-    per player within each game (group together the games by game id)'''
+    per player within each game (group together the games by game id)
+    takes in the cur and conn and returns a tuple of a list of average 
+    points scored and a list of game ids'''
 
 
     cur.execute("SELECT game_id FROM Stats")
@@ -85,7 +87,8 @@ def do_calcs(cur, conn):
     return ([av1, av2, av3, av4, av5], [x[0] for x in l])
 
 def do_calc2(cur, conn):
-    '''calculate the average number of rebounds on an associated team'''
+    '''calculate the average number of rebounds on an associated team
+    takes in cur and conn and returns a list of tuples of team id, percent rebound, and player name'''
     cur.execute("SELECT team_id FROM Stats")
     team_ids = cur.fetchall()
     id_track = []
@@ -112,7 +115,8 @@ def do_calc2(cur, conn):
     return final
 def write_file(lst):
     '''write the calculated data of players and the 
-    percentant they scored from their team to a file'''
+    percentant they scored from their team to a file
+    takes in the list of calculations and doesnt return anything'''
 
 
     f = open("ball_dont_lie.txt", "w")
@@ -122,7 +126,8 @@ def write_file(lst):
 
 def write_file2(lst):
     '''write the average number of points scored by each player per each 
-    game to a file'''
+    game to a file
+    takes in the list of calculations and does not return anything'''
 
 
     f = open("ball_dont_lie_2.txt", "w")
@@ -134,7 +139,8 @@ def make_vis(lst):
 
     '''create a pie chart of percent of points scored
     by each player on a team by accepting an input of a team
-    from the user'''
+    from the user
+    takes in the list of calculations from do_calc and does not return anything'''
 
 
     inp = input("Enter an NBA team id number, 1-30")
@@ -166,7 +172,7 @@ def make_vis(lst):
     plt.pie(nums, labels=names, autopct='%1.1f%%',
     shadow=True, startangle=90, colors=  colors)
     plt.axis('equal') 
-    plt.title(title)
+    plt.title(title, fontweight = "bold")
     plt.show()
 
 
@@ -174,7 +180,8 @@ def make_vis(lst):
 def make_vis2(lst):
     '''create a pie chart of percent of rebounds scored
     by each player on a team by accepting an input of a team
-    from the user'''
+    from the user
+    takes in the list of calcuations from do_calc2 and does not return anything'''
 
     inp = input("Enter an NBA team id number, 1-30")
     try:
@@ -208,7 +215,8 @@ def make_vis2(lst):
 
 def make_vis3(lst):
     '''create a bar graph of the 
-    average number of points scored per player in a game'''
+    average number of points scored per player in a game
+    takes in the list of calculations from do_calcs and does not return anything'''
     
     nums = lst[0]
     ids = list(range(1, 6)) #lst[1]
@@ -220,7 +228,8 @@ def make_vis3(lst):
     plt.show()
 
 def main():
-    # SETUP DATABASE AND TABLE
+    """calls all functions to correctly execute code"""
+    
     cur, conn = setUpDatabase('DATABASE.db')
     do_calc(cur, conn)
     make_vis(do_calc(cur, conn))

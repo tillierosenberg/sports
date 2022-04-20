@@ -11,10 +11,13 @@ def setUpDatabase(db_name):
     conn = sqlite3.connect(path+'/'+db_name)
     cur = conn.cursor()
     return cur, conn
-def bs2():
+def response():
     resp=requests.get('https://firstsportz.com/top-100-highest-paid-athletes-conor-mcgregor/')
     soup = BeautifulSoup(resp.content, 'html.parser')
     players = soup.find_all('tr' )
+    return players
+def bs2():
+    players = response()
     lst_of_tup=[]
     for player in players[1:]:
         player.find_all('td')
@@ -25,17 +28,25 @@ def bs2():
         rank = lst[0]
         name = lst[1]
         team = lst[2]
-        earnings=float(lst[5][1:-1])
+        salary = lst[3]
+        endorsments = lst[4]
+        earnings= float(lst[5][1:-1])
         # print((rank,name))
-        lst_of_tup.append((rank,name, team, earnings))
+        if 'K' in salary:
+            salary = float(salary[1:-1]) * 1000
+        elif 'M' in salary:
+            salary = float(salary[1:-1]) * 1000000
+        if 'K' in endorsments:
+            endorsments = float(endorsments[1:-1]) * 1000
+        elif 'M' in endorsments:
+            endorsments = float(endorsments[1:-1]) * 1000000
+        lst_of_tup.append((rank,name, team, salary, endorsments, earnings*1000000))
     # print(lst_of_tup)     
     return lst_of_tup       
    
     
 def table0(cur,conn):
-    resp=requests.get('https://firstsportz.com/top-100-highest-paid-athletes-conor-mcgregor/')
-    soup = BeautifulSoup(resp.content, 'html.parser')
-    players = soup.find_all('tr' )
+    players = response()
     lst_of_tup=[]
     for player in players[1:]:
         player.find_all('td')
@@ -57,7 +68,7 @@ def table(cur, conn, lst_of_tup):
     """
     creates the database for the menu and puts the foods into it. 
     """
-    cur.execute("CREATE TABLE IF NOT EXISTS Earnings (id INTEGER UNIQUE PRIMARY KEY, rank INTEGER, name TEXT , team INTEGER, earnings TEXT)")
+    cur.execute("CREATE TABLE IF NOT EXISTS Earnings (id INTEGER UNIQUE PRIMARY KEY, rank INTEGER, name TEXT, team INTEGER, salary INTEGER, endorsments INTEGER, earnings INTEGER)")
     cur.execute('SELECT COUNT(name) FROM Earnings')
     start = cur.fetchone()[0]
     count = 0+start
@@ -65,7 +76,8 @@ def table(cur, conn, lst_of_tup):
     for num in range(start,start+25):
         cur.execute('SELECT id FROM Teams WHERE team = ?',(lst_of_tup[num][2],))
         team_id = cur.fetchone()[0]
-        cur.execute("INSERT OR IGNORE INTO Earnings (id, rank, name, team, earnings) VALUES (?, ?, ?, ?, ?)", (count, lst_of_tup[num][0],lst_of_tup[num][1],team_id,lst_of_tup[num][3]))
+        # print(type(team_id))
+        cur.execute("INSERT OR IGNORE INTO Earnings (id, rank, name, team, salary, endorsments, earnings) VALUES (?, ?, ?, ?, ?, ?, ?)", (count, lst_of_tup[num][0],lst_of_tup[num][1],team_id,lst_of_tup[num][3], lst_of_tup[num][4], lst_of_tup[num][5]))
         count=count+1
     conn.commit()
 def main():

@@ -6,7 +6,7 @@ import json
 import os
 
 def setUpDatabase(db_name):
-    ''' sets up data base'''
+    ''' takes in a string that will name the database and then sets up data base'''
     path = os.path.dirname(os.path.abspath(__file__))
     conn = sqlite3.connect(path+'/'+db_name)
     cur = conn.cursor()
@@ -65,7 +65,8 @@ def table0(cur,conn):
     conn.commit()
 def table(cur, conn, lst_of_tup):
     """
-    creates a table of players that includes all of the information that we extracted
+    takes in a list of tuples that contain information about each player 
+    and creates a table of players that includes all of the information that we extracted
     """
     cur.execute("CREATE TABLE IF NOT EXISTS Earnings (id INTEGER UNIQUE PRIMARY KEY, rank INTEGER, name TEXT, team INTEGER, salary INTEGER, endorsments INTEGER, earnings INTEGER)")
     cur.execute('SELECT COUNT(name) FROM Earnings')

@@ -12,7 +12,7 @@ import numpy as np
 
 
 def setUpDatabase(db_name):
-    '''set up a database'''
+    '''takes in string as a database name and sets up that database'''
     path = os.path.dirname(os.path.abspath(__file__))
     conn = sqlite3.connect(path+'/'+db_name)
     cur = conn.cursor()

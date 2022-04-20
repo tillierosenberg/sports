@@ -6,17 +6,19 @@ import json
 import os
 
 def setUpDatabase(db_name):
-
+    ''' sets up data base'''
     path = os.path.dirname(os.path.abspath(__file__))
     conn = sqlite3.connect(path+'/'+db_name)
     cur = conn.cursor()
     return cur, conn
 def response():
+    '''gets response from the request from the website and parses through the website to get information about each player  '''
     resp=requests.get('https://firstsportz.com/top-100-highest-paid-athletes-conor-mcgregor/')
     soup = BeautifulSoup(resp.content, 'html.parser')
     players = soup.find_all('tr' )
     return players
 def bs2():
+    '''parses through the players and extracts specific data (rank, name, team, salary, endorsments, total earnings)'''
     players = response()
     lst_of_tup=[]
     for player in players[1:]:
@@ -46,6 +48,7 @@ def bs2():
    
     
 def table0(cur,conn):
+    '''creates table for teams that includes the team name and creates an ID for that team'''
     players = response()
     lst_of_tup=[]
     for player in players[1:]:
@@ -53,12 +56,8 @@ def table0(cur,conn):
         lst=[]
         for item in player:
             lst.append(item.text)
-        # print(lst)
         team = lst[2]
-        # print((rank,name))
         lst_of_tup.append(team)
-    # print(lst_of_tup)     
-    
     cur.execute("CREATE TABLE IF NOT EXISTS Teams (id INTEGER PRIMARY KEY, team TEXT UNIQUE)")
     for team in lst_of_tup:
 
@@ -66,7 +65,7 @@ def table0(cur,conn):
     conn.commit()
 def table(cur, conn, lst_of_tup):
     """
-    creates the database for the menu and puts the foods into it. 
+    creates a table of players that includes all of the information that we extracted
     """
     cur.execute("CREATE TABLE IF NOT EXISTS Earnings (id INTEGER UNIQUE PRIMARY KEY, rank INTEGER, name TEXT, team INTEGER, salary INTEGER, endorsments INTEGER, earnings INTEGER)")
     cur.execute('SELECT COUNT(name) FROM Earnings')
@@ -81,7 +80,7 @@ def table(cur, conn, lst_of_tup):
         count=count+1
     conn.commit()
 def main():
-#     # SETUP DATABASE AND TABLE
+    '''sets up the code in the correct order to run it'''
     cur, conn = setUpDatabase('DATABASE.db')
     table0(cur,conn)
     table(cur,conn,bs2())

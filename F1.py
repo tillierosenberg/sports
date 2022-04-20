@@ -25,7 +25,7 @@ def get_data(cur, conn):
         name_L = []
         constructor_L = []
         full_L = []
-        year = input("What year would you like the standings for? Type done if you are finished ")
+        year = input("What year would you like to get data from? (Type done if you are finished) ")
         if year.upper() == 'DONE':
             break
         if int(year)<1950 or int(year)>2021:
@@ -97,7 +97,7 @@ def make_visualization(calcs):
         x_axis.append(tups[0])
         y_axis.append(tups[1])
     plt.bar(x_axis, y_axis, color = '#CCCCFF', edgecolor = 'black')
-    plt.title("Average Constructor Finish In User Inputted Years (Top 20)", fontname = "Times New Roman", size = 22, fontweight = "bold")
+    plt.title("Average Constructor Finish In User Inputted Years", fontname = "Times New Roman", size = 22, fontweight = "bold")
     plt.ylabel("Average Position Finished", fontname = "Times New Roman", size = 12, fontweight = 'bold')
     plt.xlabel("Constructor", fontname = "Times New Roman", size = 12, fontweight = 'bold')
     plt.tick_params(axis='x', which='major', labelsize=6)
